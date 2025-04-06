@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap4PKR - Earn Money by Tapping</title>
+    <!-- Add Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <style>
+        :root {
+            --primary: #4a6bff;
+            --secondary: #ff6b4a;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+            --success: #28a745;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7ff;
+            color: var(--dark);
+            transition: background-color 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e1e5eb;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 50px;
+            margin-right: 15px;
+        }
+        
+        .logo-text h1 {
+            color: var(--primary);
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .logo-text p {
+            color: var(--dark);
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .auth-section {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-lg {
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard {
+            display: none;
+        }
+        
+        .welcome-message {
+            margin-bottom: 20px;
+        }
+        
+        .welcome-message h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .welcome-message p {
+            color: #6c757d;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7ff 0%, #e8ecff 100%);
+            border-radius: 10px;
+            padding: 20px;
+            width: 48%;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card p {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .tap-area {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        #tap-btn {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(74, 107, 255, 0.3);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #tap-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 10px rgba(74, 107, 255, 0.3);
+        }
+        
+        #tap-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        #tap-btn:active::after {
+            opacity: 1;
+        }
+        
+        .timer {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .withdrawal-section {
+            margin-top: 40px;
+        }
+        
+        .withdrawal-form {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e1e5eb;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .boost-card {
+            background: linear-gradient(135deg, #fff8f5 0%, #ffefe8 100%);
+            border: 1px solid #ffd9c9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .boost-card h3 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .boost-card ul {
+            margin: 15px 0 20px 20px;
+        }
+        
+        .boost-card li {
+            margin-bottom: 8px;
+        }
+        
+        .testimonials {
+            margin-top: 50px;
+        }
+        
+        .testimonials h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .testimonial-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .testimonial-card p {
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .testimonial-author img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
+        .author-info h4 {
+            font-size: 16px;
+        }
+        
+        .author-info p {
+            font-style: normal;
+            font-size: 14px;
+            color: #6c757d;
+            margin: 0;
+        }
+        
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .payment-methods img {
+            height: 40px;
+            filter: grayscale(100%) opacity(60%);
+            transition: all 0.3s ease;
+        }
+        
+        .payment-methods img:hover {
+            filter: grayscale(0%) opacity(100%);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 1px solid #e1e5eb;
+            margin-top: 50px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            font-size: 22px;
+            color: var(--primary);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .active-form {
+            display: block;
+        }
+        
+        .form-switch {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .form-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        /* Error Message */
+        .error-message {
+            color: #dc3545;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        /* Forgot Password Link */
+        .forgot-password {
+            text-align: right;
+            margin: 10px 0;
+        }
+        
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .auth-section {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="https://via.placeholder.com/50x50/4a6bff/ffffff?text=T4P" alt="Tap4PKR Logo">
+                <div class="logo-text">
+                    <h1>Tap4PKR</h1>
+                    <p>Earn money with every tap</p>
+                </div>
+            </div>
+            <div class="auth-section" id="auth-buttons">
+                <button class="btn btn-primary" id="login-btn">Login</button>
+                <button class="btn btn-outline" id="signup-btn">Sign Up</button>
+            </div>
+            <button class="btn btn-danger logout-btn" id="logout-btn">Logout</button>
+        </header>
+
+        <!-- Authentication Forms -->
+        <div class="card auth-form" id="login-form">
+            <h2>Login to Your Account</h2>
+            <div class="error-message" id="login-error"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" class="form-control" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" class="form-control" id="login-password" required>
+                </div>
+                <div class="forgot-password">
+                    <a href="#" id="forgot-password-link">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Login</button>
+            </form>
+            <div class="form-switch">
+                Don't have an account? <a href="#" id="switch-to-signup">Sign up</a>
+            </div>
+        </div>
+
+        <div class="card auth-form" id="signup-form">
+            <h2>Create New Account</h2>
+            <div class="error-message" id="signup-error"></div>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" class="form-control" id="signup-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" class="form-control" id="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password (min 6 characters)</label>
+                    <input type="password" class="form-control" id="signup-password" minlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Sign Up</button>
+            </form>
+            <div class="form-switch">
+                Already have an account? <a href="#" id="switch-to-login">Login</a>
+            </div>
+        </div>
+
+        <!-- Forgot Password Modal -->
+        <div class="modal" id="forgot-password-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Reset Password</h3>
+                    <button class="close-modal" id="close-forgot-modal">&times;</button>
+                </div>
+                <div class="error-message" id="forgot-error"></div>
+                <form id="forgotPasswordForm">
+                    <div class="form-group">
+                        <label for="reset-email">Enter your email address</label>
+                        <input type="email" class="form-control" id="reset-email" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send Reset Link</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Boost Plan Modal -->
+        <div class="modal" id="boost-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Boost Plan Activation</h3>
+                    <button class="close-modal" id="close-boost-modal">&times;</button>
+                </div>
+                <div class="error-message" id="boost-error"></div>
+                <p id="boost-message">Activating Boost Plan will deduct 300 PKR from your account and double your earnings for 30 days.</p>
+                <button class="btn btn-success" id="confirm-boost" style="width: 100%; margin-top: 20px;">Activate Boost Plan</button>
+            </div>
+        </div>
+
+        <!-- Dashboard (shown after login) -->
+        <div class="dashboard" id="dashboard">
+            <div class="welcome-message">
+                <h2>Welcome back, <span id="username-display">User</span>!</h2>
+                <p>Start tapping to earn coins and withdraw PKR</p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Your Coins</h3>
+                    <p id="coin-display">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Your Balance</h3>
+                    <p id="pkr-display">0.00 PKR</p>
+                </div>
+            </div>
+
+            <div class="tap-area">
+                <button id="tap-btn">TAP</button>
+                <div class="timer" id="timer" style="display: none;">
+                    Next tap in: <span id="countdown">60:00</span>
+                </div>
+            </div>
+
+            <div class="withdrawal-section">
+                <button class="btn btn-success" id="withdraw-btn">Withdraw PKR</button>
+                <div class="withdrawal-form" id="withdraw-form">
+                    <div class="form-group">
+                        <label for="withdraw-amount">Amount (in coins)</label>
+                        <input type="number" class="form-control" id="withdraw-amount" min="20000">
+                        <small>Minimum withdrawal: 20000 coins (200 PKR)</small>
+                    </div>
+                    <div class="form-group">
+                        <label>You will receive: <span id="withdraw-pkr">0.00</span> PKR</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-number">Easypaisa/JazzCash Number</label>
+                        <input type="text" class="form-control" id="payment-number" placeholder="03XX-XXXXXXX">
+                    </div>
+                    <button class="btn btn-primary" id="confirm-withdraw" style="width: 100%;">Request Withdrawal</button>
+                </div>
+            </div>
+
+            <div class="boost-card">
+                <h3>🚀 Double Your Earnings!</h3>
+                <p>Activate our premium boost plan to double your coin conversion rate for 30 days!</p>
+                <ul>
+                    <li>100 coins = 2 PKR (instead of 1 PKR)</li>
+                    <li>200 coins hourly limit becomes 400 coins</li>
+                    <li>30-day duration</li>
+                    <li>One-time payment of 300 PKR</li>
+                </ul>
+                <button class="btn btn-success" id="boost-btn">Activate Boost for 300 PKR</button>
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="testimonials">
+            <h2>What Our Users Say</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p>"Maine pehle hafte mein 500 PKR kamaye! Bahut aasaan hai istemaal karna."</p>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
+                        <div class="author-info">
+                            <h4>Ahmed Khan</h4>
+                            <p>Lahore</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"Boost plan kaam karta hai! Ab rozana lagbhag 100 PKR kama leta hoon."</p>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                        <div class="author-info">
+                            <h4>Fatima Ali</h4>
+                            <p>Karachi</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"Pakistan ka behtareen tapping app. Payments hamesha time par milti hain."</p>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="User">
+                        <div class="author-info">
+                            <h4>Usman Malik</h4>
+                            <p>Islamabad</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="payment-methods">
+            <img src="https://via.placeholder.com/150x60/e1e5eb/2c3e50?text=Easypaisa" alt="Easypaisa">
+            <img src="https://via.placeholder.com/150x60/e1e5eb/2c3e50?text=JazzCash" alt="JazzCash">
+        </div>
+
+        <!-- Trust Messages in Urdu -->
+        <div style="text-align: center; margin: 30px 0;">
+            <h3>Hum Par Bharosa Karein</h3>
+            <p>10,000+ users ne hum par bharosa kiya hai</p>
+            <p>Instant withdrawals - Kabhi bhi paise nikal sakte hain</p>
+            <p>100% secure - Aapka data hamesha protected</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 Tap4PKR. All rights reserved.</p>
+        <p><a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a></p>
+    </footer>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTcNxWRpIiAhb26hvq3L6RomnGBfM-1xI",
+            authDomain: "tap4pkr.firebaseapp.com",
+            databaseURL: "https://tap4pkr-default-rtdb.firebaseio.com",
+            projectId: "tap4pkr",
+            storageBucket: "tap4pkr.appspot.com",
+            messagingSenderId: "700686338324",
+            appId: "1:700686338324:web:5e06e1cacaa350d9135a01",
+            measurementId: "G-2TJF4NLKNP"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const analytics = firebase.analytics();
+
+        // DOM Elements
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const dashboard = document.getElementById('dashboard');
+        const switchToSignup = document.getElementById('switch-to-signup');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const loginFormSubmit = document.getElementById('loginForm');
+        const signupFormSubmit = document.getElementById('signupForm');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
+        const usernameDisplay = document.getElementById('username-display');
+        const coinDisplay = document.getElementById('coin-display');
+        const pkrDisplay = document.getElementById('pkr-display');
+        const tapBtn = document.getElementById('tap-btn');
+        const timerDisplay = document.getElementById('timer');
+        const countdownDisplay = document.getElementById('countdown');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        const withdrawForm = document.getElementById('withdraw-form');
+        const withdrawAmount = document.getElementById('withdraw-amount');
+        const withdrawPkr = document.getElementById('withdraw-pkr');
+        const paymentNumber = document.getElementById('payment-number');
+        const confirmWithdraw = document.getElementById('confirm-withdraw');
+        const boostBtn = document.getElementById('boost-btn');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const closeForgotModal = document.getElementById('close-forgot-modal');
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const resetEmail = document.getElementById('reset-email');
+        const forgotError = document.getElementById('forgot-error');
+        const boostModal = document.getElementById('boost-modal');
+        const closeBoostModal = document.getElementById('close-boost-modal');
+        const confirmBoost = document.getElementById('confirm-boost');
+        const boostMessage = document.getElementById('boost-message');
+        const boostError = document.getElementById('boost-error');
+
+        // Variables
+        let coins = 0;
+        let pkr = 0;
+        let tapCount = 0;
+        let timerInterval;
+        let timeLeft = 3600; // 1 hour in seconds
+        let lastTapTime = 0;
+        let isBoostActive = false;
+        let boostExpiry = 0;
+
+        // Event Listeners
+        loginBtn.addEventListener('click', () => {
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+        });
+
+        signupBtn.addEventListener('click', () => {
+            signupForm.style.display = 'block';
+            loginForm.style.display = 'none';
+        });
+
+        switchToSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupForm.style.display = 'block';
+            loginForm.style.display = 'none';
+        });
+
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                showAuthButtons();
+                hideDashboard();
+                clearInterval(timerInterval);
+            });
+        });
+
+        loginFormSubmit.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    loginError.textContent = '';
+                    loadUserData(userCredential.user.uid);
+                    hideAuthButtons();
+                    showDashboard();
+                })
+                .catch((error) => {
+                    loginError.textContent = error.message;
+                });
+        });
+
+        signupFormSubmit.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Save additional user data
+                    const user = userCredential.user;
+                    return database.ref('users/' + user.uid).set({
+                        username: username,
+                        email: email,
+                        coins: 0,
+                        pkr: 0,
+                        isBoostActive: false,
+                        boostExpiry: 0
+                    });
+                })
+                .then(() => {
+                    signupError.textContent = '';
+                    alert('Account created successfully! Please login.');
+                    signupForm.style.display = 'none';
+                    loginForm.style.display = 'block';
+                })
+                .catch((error) => {
+                    signupError.textContent = error.message;
+                });
+        });
+
+        tapBtn.addEventListener('click', () => {
+            const now = Date.now();
+            const currentTime = Math.floor(now / 1000);
+            
+            if (currentTime - lastTapTime >= 3600 || tapCount < (isBoostActive ? 400 : 200)) {
+                // Allow tap if 1 hour has passed or tap count is less than limit
+                tapCount++;
+                coins += isBoostActive ? 2 : 1;
+                
+                if (tapCount >= (isBoostActive ? 400 : 200)) {
+                    // Start timer when reaching tap limit
+                    lastTapTime = currentTime;
+                    startTimer();
+                }
+                
+                updateCoinDisplay();
+                saveUserData();
+            } else {
+                alert('You have reached the maximum taps for this hour. Please wait.');
+            }
+        });
+
+        withdrawBtn.addEventListener('click', () => {
+            withdrawForm.style.display = withdrawForm.style.display === 'block' ? 'none' : 'block';
+        });
+
+        withdrawAmount.addEventListener('input', () => {
+            const amount = parseInt(withdrawAmount.value) || 0;
+            const pkrAmount = amount / 100;
+            withdrawPkr.textContent = pkrAmount.toFixed(2);
+        });
+
+        confirmWithdraw.addEventListener('click', () => {
+            const amount = parseInt(withdrawAmount.value);
+            const paymentNum = paymentNumber.value.trim();
+            
+            if (!amount || amount < 20000) {
+                alert('Minimum withdrawal is 20000 coins (200 PKR)');
+                return;
+            }
+            
+            if (amount > coins) {
+                alert('You don\'t have enough coins');
+                return;
+            }
+            
+            if (!paymentNum || !/^03\d{9}$/.test(paymentNum)) {
+                alert('Please enter a valid Easypaisa/JazzCash number (03XXXXXXXXX)');
+                return;
+            }
+            
+            // Process withdrawal
+            coins -= amount;
+            updateCoinDisplay();
+            saveUserData();
+            
+            // In a real app, you would send this to your backend for processing
+            alert(`Withdrawal request for ${(amount/100).toFixed(2)} PKR to ${paymentNum} has been submitted!`);
+            withdrawForm.style.display = 'none';
+        });
+
+        boostBtn.addEventListener('click', () => {
+            // Check if boost is already active
+            if (isBoostActive) {
+                alert('Boost plan is already active!');
+                return;
+            }
+            
+            // Check if user has enough balance (300 PKR = 30000 coins)
+            if (coins < 30000) {
+                boostMessage.textContent = 'Dear user, you cannot double your earnings for 1 month because you don\'t have 300 PKR (30000 coins) in your account.';
+                boostError.textContent = '';
+                boostModal.style.display = 'flex';
+            } else {
+                boostMessage.textContent = 'Activating Boost Plan will deduct 300 PKR (30000 coins) from your account and double your earnings for 30 days.';
+                boostError.textContent = '';
+                boostModal.style.display = 'flex';
+            }
+        });
+
+        confirmBoost.addEventListener('click', () => {
+            if (coins < 30000) {
+                boostError.textContent = 'You need at least 30000 coins (300 PKR) to activate boost plan.';
+                return;
+            }
+            
+            // Deduct 30000 coins (300 PKR)
+            coins -= 30000;
+            
+            // Activate boost
+            isBoostActive = true;
+            const now = Math.floor(Date.now() / 1000);
+            boostExpiry = now + (30 * 24 * 3600); // 30 days from now
+            
+            // Update user data
+            const user = auth.currentUser;
+            if (user) {
+                database.ref('users/' + user.uid).update({
+                    coins: coins,
+                    isBoostActive: true,
+                    boostExpiry: boostExpiry
+                }).then(() => {
+                    alert('Boost plan activated successfully for 30 days!');
+                    boostModal.style.display = 'none';
+                    updateCoinDisplay();
+                }).catch((error) => {
+                    boostError.textContent = error.message;
+                });
+            }
+        });
+
+        closeBoostModal.addEventListener('click', () => {
+            boostModal.style.display = 'none';
+        });
+
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            forgotPasswordModal.style.display = 'flex';
+        });
+
+        closeForgotModal.addEventListener('click', () => {
+            forgotPasswordModal.style.display = 'none';
+        });
+
+        forgotPasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = resetEmail.value;
+            
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    forgotError.textContent = '';
+                    alert('Password reset email sent! Please check your inbox.');
+                    forgotPasswordModal.style.display = 'none';
+                })
+                .catch((error) => {
+                    forgotError.textContent = error.message;
+                });
+        });
+
+        // Functions
+        function showAuthButtons() {
+            document.getElementById('auth-buttons').style.display = 'flex';
+            logoutBtn.style.display = 'none';
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'none';
+        }
+
+        function hideAuthButtons() {
+            document.getElementById('auth-buttons').style.display = 'none';
+            logoutBtn.style.display = 'block';
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'none';
+        }
+
+        function showDashboard() {
+            dashboard.style.display = 'block';
+        }
+
+        function hideDashboard() {
+            dashboard.style.display = 'none';
+        }
+
+        function updateCoinDisplay() {
+            coinDisplay.textContent = coins;
+            pkrDisplay.textContent = (coins / 100).toFixed(2) + ' PKR';
+        }
+
+        function startTimer() {
+            timeLeft = 3600; // 1 hour
+            timerDisplay.style.display = 'block';
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.style.display = 'none';
+                    tapCount = 0;
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+            }, 1000);
+        }
+
+        function loadUserData(userId) {
+            database.ref('users/' + userId).once('value')
+                .then((snapshot) => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        usernameDisplay.textContent = userData.username || 'User';
+                        coins = userData.coins || 0;
+                        pkr = userData.pkr || 0;
+                        isBoostActive = userData.isBoostActive || false;
+                        boostExpiry = userData.boostExpiry || 0;
+                        
+                        updateCoinDisplay();
+                        
+                        // Check if boost is still active
+                        if (isBoostActive && boostExpiry) {
+                            const now = Math.floor(Date.now() / 1000);
+                            if (now > boostExpiry) {
+                                isBoostActive = false;
+                                database.ref('users/' + userId).update({
+                                    isBoostActive: false
+                                });
+                            }
+                        }
+                    }
+                });
+        }
+
+        function saveUserData() {
+            const user = auth.currentUser;
+            if (user) {
+                database.ref('users/' + user.uid).update({
+                    coins: coins,
+                    pkr: pkr
+                });
+            }
+        }
+
+        // Check auth state on page load
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                hideAuthButtons();
+                showDashboard();
+                loadUserData(user.uid);
+            } else {
+                showAuthButtons();
+                hideDashboard();
+            }
+        });
+
+        // Initialize
+        showAuthButtons();
+    </script>
+</body>
+</html>
